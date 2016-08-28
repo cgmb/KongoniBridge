@@ -29,6 +29,36 @@ ApplicationWindow {
         anchors.left: parent.left
     }
 
+    RgButton {
+        id: buildButton
+        text: "Build"
+        onClicked: Qt.quit()
+
+        anchors.margins: 20
+        anchors.bottom: parent.bottom
+        anchors.right: parent.right
+    }
+
+    RgButton {
+        id: deleteButton
+        text: "Delete"
+        onClicked: Qt.quit()
+
+        anchors.margins: 20
+        anchors.bottom: buildButton.top
+        anchors.right: parent.right
+    }
+
+    RgButton {
+        id: testButton
+        text: "Test"
+        onClicked: Qt.quit()
+
+        anchors.margins: 20
+        anchors.bottom: deleteButton.top
+        anchors.right: parent.right
+    }
+
     RgText {
         id: description
         anchors.left: parent.left

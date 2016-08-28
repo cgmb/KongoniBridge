@@ -4,6 +4,7 @@ Rectangle {
     id: node
     color: selected ? "white" : "grey"
 
+    property bool structural: false
     property bool selected: false
     signal nodeSelected(var node)
     signal nodeRemoved(var node)
@@ -28,7 +29,9 @@ Rectangle {
             if (mouse.button === Qt.LeftButton) {
                 node.selected = true
             } else {
-                nodeRemoved(node)
+                if (!structural) {
+                    nodeRemoved(node)
+                }
             }
         }
     }

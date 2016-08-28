@@ -8,5 +8,6 @@
         <file>qml/RgButton.qml</file>
         <file>qml/RgNode.qml</file>
         <file>qml/RgBridge.qml</file>
+        <file>qml/RgBeam.qml</file>
     </qresource>
 </RCC>

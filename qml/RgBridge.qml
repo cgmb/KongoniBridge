@@ -6,11 +6,15 @@ Rectangle {
 
     property var selectedNode: null
     property var nodes: []
+    property var beams: []
 
     MouseArea {
         anchors.fill: parent
         onClicked: {
-            createNode(mouse.x, mouse.y)
+            var node = createNode(mouse.x, mouse.y)
+            if (selectedNode)
+                createBeam(selectedNode, node)
+            node.selected = true
         }
     }
 
@@ -26,6 +30,15 @@ Rectangle {
         if (selectedNode === node) {
             selectedNode = null
         }
+        for (var i = bridge.beams.length - 1; i >= 0; --i) {
+            var beam = bridge.beams[i];
+            if (beam.leftAnchor === node ||
+                beam.rightAnchor === node) {
+                bridge.beams.splice(i, 1);
+                beam.destroy()
+            }
+        }
+
         removeItemFromList(node, bridge.nodes)
         node.destroy()
     }
@@ -46,5 +59,14 @@ Rectangle {
         node.nodeSelected.connect(updateSelection)
         node.nodeRemoved.connect(handleNodeRemoved)
         bridge.nodes.push(node)
+        return node
+    }
+
+    function createBeam(left, right)
+    {
+        var beamComponent = Qt.createComponent("RgBeam.qml");
+        var beam = beamComponent.createObject(window,
+            { "leftAnchor": left, "rightAnchor": right });
+        bridge.beams.push(beam)
     }
 }
