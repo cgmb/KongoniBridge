@@ -1,11 +1,12 @@
-<!DOCTYPE RCC>
-<RCC version="1.0">
-    <qresource>
+<RCC>
+    <qresource prefix="/">
         <file>fonts/SourceSansPro-Regular.otf</file>
         <file>qml/Card.qml</file>
         <file>qml/Field.qml</file>
         <file>qml/MainWindow.qml</file>
         <file>qml/RgText.qml</file>
         <file>qml/RgButton.qml</file>
+        <file>qml/RgNode.qml</file>
+        <file>qml/RgBridge.qml</file>
     </qresource>
 </RCC>
