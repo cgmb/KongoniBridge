@@ -11,6 +11,13 @@ Image {
     property var nodes: []
     property var beams: []
 
+
+    Timer {
+        id: analysisTimer
+        interval: 25
+        onTriggered: analyzer.step()
+    }
+
     FEAnalyzer {
         id: analyzer
         onProcessingComplete: {
@@ -21,7 +28,29 @@ Image {
             for (var i = 0; i < beamStress.length; ++i) {
                 beams[i].stress = beamStress[i]
             }
+            analysisTimer.start()
         }
+        onFailed: {
+            analysisTimer.stop()
+            gameText.visible = true
+            gameText.text = "Bridge Collapsed!"
+            gameText.color = "red"
+        }
+        onConverged: {
+            analysisTimer.stop()
+            gameText.visible = true
+            gameText.text = "Success!"
+            gameText.color = "green"
+        }
+    }
+
+    RgText {
+        id: gameText
+        z: 3
+        anchors.centerIn: parent
+        font.pointSize: 48
+        style: Text.Outline
+        styleColor: "black"
     }
 
     SoundEffect {
@@ -57,6 +86,7 @@ Image {
                 createBeam(selectedNode, node)
             node.selected = true
             constructSound.play()
+            gameText.visible = false
         }
     }
 
@@ -121,7 +151,7 @@ Image {
     function createNode(x, y)
     {
         var nodeComponent = Qt.createComponent("RgNode.qml");
-        var node = nodeComponent.createObject(window, { "x": x, "y": y });
+        var node = nodeComponent.createObject(bridge, { "x": x, "y": y });
         node.x -=  node.width / 2
         node.y -=  node.height / 2
         node.nodeSelected.connect(updateSelection)
@@ -134,7 +164,7 @@ Image {
     function createBeam(left, right)
     {
         var beamComponent = Qt.createComponent("RgBeam.qml");
-        var beam = beamComponent.createObject(window,
+        var beam = beamComponent.createObject(bridge,
             { "leftAnchor": left, "rightAnchor": right });
         beam.beamRemoved.connect(handleBeamRemoved)
         bridge.beams.push(beam)
