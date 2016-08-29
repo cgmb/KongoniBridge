@@ -3,13 +3,13 @@
 #include <math.h>
 #include <algorithm>
 #include <array>
+#include <iostream>
 #include <vector>
 #include <Eigen/Dense>
 #include <QQuickItem>
 #include <QVariant>
 #include <QVariantList>
 #include <QQmlProperty>
-#include <iostream>
 
 struct InputNode
 {
@@ -28,6 +28,7 @@ struct InputMember
 struct Output {
     std::vector<Vec2f> nodeOffsets;
     std::vector<float> memberStressIndicator;
+    Eigen::VectorXf stressForces;
 };
 
 struct Node
@@ -164,6 +165,18 @@ Output computeDisplacements(std::vector<InputNode> inNodes,
     for (unsigned i = 0; i < o.memberStressIndicator.size(); ++i) {
         o.memberStressIndicator[i] = members[i].stress;
     }
+    Eigen::VectorXf stressForces(2*nodes.size());
+    for (unsigned i = 0; i < members.size(); ++i) {
+        const Member& member = members[i];
+        float alongBeamForce = member.area * member.stress;
+        float xForce = sinf(member.theta) * alongBeamForce;
+        float yForce = cosf(member.theta) * alongBeamForce;
+        stressForces(2*member.nodeI.id) += xForce;
+        stressForces(2*member.nodeI.id+1) += yForce;
+        stressForces(2*member.nodeJ.id) += -xForce;
+        stressForces(2*member.nodeJ.id+1) += -yForce;
+    }
+    o.stressForces = stressForces;
     return o;
 }
 
@@ -177,7 +190,7 @@ int index_of(const std::vector<T>& v, const T& value) {
     }
 }
 
-void addBeamWeightToNodes(Eigen::VectorXf& forces,
+void addInitialBeamWeightToNodes(Eigen::VectorXf& forces,
   const std::vector<InputNode>& inNodes,
   const std::vector<InputMember>& inMembers) {
   const float density = 1.0; // kg/m^3
@@ -193,8 +206,13 @@ void addBeamWeightToNodes(Eigen::VectorXf& forces,
   }
 }
 
-void FEAnalyzer::processBridge(const QVariantList& nodes,
-                               const QVariantList& beams) {
+struct Input {
+    std::vector<InputNode> nodes;
+    std::vector<InputMember> members;
+};
+
+Input extractInput(const QVariantList& nodes,
+                   const QVariantList& beams) {
     std::vector<InputNode> inNodes;
     std::vector<QQuickItem*> items;
     foreach(QVariant v, nodes) {
@@ -217,26 +235,38 @@ void FEAnalyzer::processBridge(const QVariantList& nodes,
         QVariant lav = QQmlProperty::read(beam, QStringLiteral("leftAnchor"));
         QQuickItem* la = qobject_cast<QQuickItem*>(lav.value<QObject*>());
         int left_index = index_of(items, la);
-        if (left_index < 0) {
-            qWarning("beam leftAnchor not in list");
-            return;
-        }
         QVariant rav = QQmlProperty::read(beam, QStringLiteral("rightAnchor"));
         QQuickItem* ra = qobject_cast<QQuickItem*>(rav.value<QObject*>());
         int right_index = index_of(items, ra);
-        if (right_index < 0) {
-            qWarning("beam rightAnchor not in list");
-            return;
-        }
         InputMember m = { 1.0, 1e5,
                           (unsigned)left_index, (unsigned)right_index };
         inMembers.push_back(m);
     }
 
+    return { inNodes, inMembers };
+}
+
+FEAnalyzer::FEAnalyzer() {
+    in_ = new Input;
+}
+
+FEAnalyzer::~FEAnalyzer() {
+    delete in_;
+}
+
+void FEAnalyzer::processBridge(const QVariantList& nodes,
+                               const QVariantList& beams) {
+    *in_ = extractInput(nodes, beams);
     Eigen::VectorXf forces(2 * nodes.size());
     forces.setZero();
-    addBeamWeightToNodes(forces, inNodes, inMembers);
-    Output o = computeDisplacements(inNodes, inMembers, forces);
+    addInitialBeamWeightToNodes(forces, in_->nodes, in_->members);
+    gravityForces_ = forces;
+    Output o = computeDisplacements(in_->nodes, in_->members, forces);
+    stressForces_ = o.stressForces;
+    emitCompleted(o);
+}
+
+void FEAnalyzer::emitCompleted(const Output& o) {
     QVariantList nodeOffsets;
     for (unsigned i = 0; i < o.nodeOffsets.size(); ++i) {
         QVariantMap offset;
@@ -249,6 +279,30 @@ void FEAnalyzer::processBridge(const QVariantList& nodes,
         beamStress.append(QVariant::fromValue(o.memberStressIndicator[i]));
     }
     emit processingComplete(nodeOffsets, beamStress);
+}
+
+void FEAnalyzer::step() {
+    Eigen::VectorXf forces = gravityForces_ + stressForces_;
+    Output o = computeDisplacements(in_->nodes, in_->members, forces);
+    stressForces_ = o.stressForces;
+    emitCompleted(o);
+
+    bool onlyLowStress = std::all_of(
+        o.memberStressIndicator.cbegin(),
+        o.memberStressIndicator.cend(), [](float stress){
+        return fabs(stress) < 8000;
+    });
+    if (!onlyLowStress) {
+        emit failed();
+    }
+    bool onlySmallOffsets = std::all_of(
+        o.nodeOffsets.cbegin(),
+        o.nodeOffsets.cend(), [](Vec2f offset){
+        return fabs(offset.x) < 10.f && fabs(offset.y) < 10.f;
+    });
+    if (onlySmallOffsets) {
+        emit converged();
+    }
 }
 
 /*
