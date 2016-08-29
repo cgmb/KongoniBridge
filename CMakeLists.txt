@@ -23,15 +23,11 @@ set(QRC_FILES
 )
 qt5_add_resources(QRC_SOURCES ${QRC_FILES})
 
-#set(EXT_PROJECTS_DIR "3rdparty")
-#add_subdirectory(${EXT_PROJECTS_DIR}/pcg)
-#include_directories(${PCG_INCLUDE_DIR})
+set(EXT_PROJECTS_DIR "3rdparty")
+include_directories(SYSTEM ${EXT_PROJECTS_DIR}/Eigen)
+add_definitions(-DEIGEN_MPL2_ONLY)
 
 add_executable(bridge ${SOURCES} ${MOC_SOURCES} ${QRC_SOURCES})
-#target_link_libraries(bridge
-#  ${OPENSSL_LIBRARIES}
-#)
-#add_dependencies(bridge pcg RapidJSON)
 qt5_use_modules(bridge Core Gui Qml Quick)
 
 install(TARGETS bridge
