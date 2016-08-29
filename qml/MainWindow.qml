@@ -6,7 +6,7 @@ ApplicationWindow {
     id: window
     visible: true
     title: "Bridge"
-    color: "grey"
+    color: "skyblue"
 
     FontLoader {
         source: "qrc:/fonts/SourceSansPro-Regular.otf"
@@ -16,6 +16,7 @@ ApplicationWindow {
     height: 900
 
     RgBridge {
+        id: bridge
         anchors.fill: parent
     }
 
@@ -30,32 +31,12 @@ ApplicationWindow {
     }
 
     RgButton {
-        id: buildButton
-        text: "Build"
-        onClicked: Qt.quit()
+        id: testButton
+        text: "Test"
+        onClicked: bridge.doAnalysis()
 
         anchors.margins: 20
         anchors.bottom: parent.bottom
-        anchors.right: parent.right
-    }
-
-    RgButton {
-        id: deleteButton
-        text: "Delete"
-        onClicked: Qt.quit()
-
-        anchors.margins: 20
-        anchors.bottom: buildButton.top
-        anchors.right: parent.right
-    }
-
-    RgButton {
-        id: testButton
-        text: "Test"
-        onClicked: Qt.quit()
-
-        anchors.margins: 20
-        anchors.bottom: deleteButton.top
         anchors.right: parent.right
     }
 

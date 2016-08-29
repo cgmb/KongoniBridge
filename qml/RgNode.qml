@@ -2,12 +2,14 @@ import QtQuick 2.2
 
 Rectangle {
     id: node
-    color: selected ? "white" : "grey"
+    color: selected ? "white" : structural ? "grey" : "lightsteelblue"
+    z: 2
 
     property bool structural: false
     property bool selected: false
     signal nodeSelected(var node)
     signal nodeRemoved(var node)
+    signal wantBeamTo(var node)
 
     width: 50
     height: width
@@ -25,8 +27,11 @@ Rectangle {
     MouseArea {
         anchors.fill: parent
         acceptedButtons: Qt.LeftButton | Qt.RightButton
-        onClicked: {
+        onPressed: {
             if (mouse.button === Qt.LeftButton) {
+                if (mouse.modifiers & Qt.ShiftModifier) {
+                    wantBeamTo(node)
+                }
                 node.selected = true
             } else {
                 if (!structural) {
@@ -34,5 +39,22 @@ Rectangle {
                 }
             }
         }
+        drag.target: node.structural ? null : node
+        drag.threshold: 0
+    }
+
+    NumberAnimation on scale {
+        id: createAnimation
+        easing {
+            type: Easing.InOutSine
+            amplitude: 100
+            period: 10
+        }
+        from: 1.1
+        to: 1
+    }
+
+    Component.onCompleted: {
+        createAnimation.start()
     }
 }

@@ -9,5 +9,6 @@
         <file>qml/RgNode.qml</file>
         <file>qml/RgBridge.qml</file>
         <file>qml/RgBeam.qml</file>
+        <file>js/colormap.js</file>
     </qresource>
 </RCC>

@@ -1,7 +1,8 @@
-#include <cstring>
 #include <stdio.h>
+#include <string.h>
 
 #include "version.h"
+#include "FEAnalyzer.h"
 
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
@@ -15,9 +16,9 @@ Arguments parse_args(int argc, char** argv) {
   Arguments args;
   for (int i = 1; i < argc; ++i) {
     char* arg = argv[i];
-    if (std::strcmp(arg, "--help") == 0) {
+    if (strcmp(arg, "--help") == 0) {
       printf("Usage: rust [--version]\n");
-    } else if (std::strcmp(arg, "--version") == 0) {
+    } else if (strcmp(arg, "--version") == 0) {
       args.version_check = true;
     } else {
       fprintf(stderr, "Unrecognized argument:\n%s\n", arg);
@@ -36,10 +37,8 @@ QString version_qstring() {
 }
 
 int main(int argc, char** argv) {
-  qputenv("QT_LOGGING_RULES", "qt.network.ssl.warning=false");
-
   QGuiApplication app(argc, argv);
-  app.setApplicationName("rust");
+  app.setApplicationName("bridge");
   app.setApplicationVersion(version_qstring());
   app.setOrganizationDomain("rustgolem.com");
   app.setOrganizationName("RustGolem");
@@ -48,6 +47,9 @@ int main(int argc, char** argv) {
     printf("%s\n", qPrintable(version_qstring()));
     return 0;
   }
+
+  qmlRegisterType<FEAnalyzer>("rustgolem", 1, 0, "FEAnalyzer");
+
 /*
   qmlRegisterType<SoftwareUpdater>("rustgolem", 1, 0, "SoftwareUpdater");
   qmlRegisterType<Messenger>("rustgolem", 1, 0, "Messenger");

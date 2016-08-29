@@ -1,20 +1,64 @@
 import QtQuick 2.2
+import rustgolem 1.0
 
 Rectangle {
     id: bridge
-    color: 'darkgrey'
+    color: 'transparent'
 
     property var selectedNode: null
     property var nodes: []
     property var beams: []
 
+    FEAnalyzer {
+        id: analyzer
+        onProcessingComplete: {
+            for (var i = 0; i < nodeOffsets.length; ++i) {
+                nodes[i].x += nodeOffsets[i].x
+                nodes[i].y += nodeOffsets[i].y
+            }
+            for (var i = 0; i < beamStress.length; ++i) {
+                beams[i].stress = beamStress[i]
+            }
+        }
+    }
+
+    function doAnalysis() {
+        analyzer.processBridge(nodes, beams)
+    }
+
+    function snapToGrid(x) {
+        /*
+        var scale = 100
+        return scale * Math.round(x / scale)
+        */
+        return x // we need to sort a few other things out before doing this
+    }
+
     MouseArea {
         anchors.fill: parent
         onClicked: {
-            var node = createNode(mouse.x, mouse.y)
+            var node = createNode(snapToGrid(mouse.x),
+                                  snapToGrid(mouse.y))
             if (selectedNode)
                 createBeam(selectedNode, node)
             node.selected = true
+        }
+    }
+
+    function tryCreateBeamToNode(node) {
+        if (selectedNode) {
+            var alreadyExists = false
+            for (var i = 0; i < bridge.beams.length; ++i) {
+                var beam = bridge.beams[i]
+                if ((beam.leftAnchor === selectedNode &&
+                     beam.rightAnchor === node)||
+                    (beam.leftAnchor === node &&
+                     beam.rightAnchor === selectedNode)) {
+                    alreadyExists = true
+                }
+            }
+            if (!alreadyExists)
+                createBeam(selectedNode, node)
         }
     }
 
@@ -43,6 +87,11 @@ Rectangle {
         node.destroy()
     }
 
+    function handleBeamRemoved(beam) {
+        removeItemFromList(beam, bridge.beams)
+        beam.destroy()
+    }
+
     function removeItemFromList(item, list) {
         var index = list.indexOf(item)
         if (index >= 0) {
@@ -58,6 +107,7 @@ Rectangle {
         node.y -=  node.height / 2
         node.nodeSelected.connect(updateSelection)
         node.nodeRemoved.connect(handleNodeRemoved)
+        node.wantBeamTo.connect(tryCreateBeamToNode)
         bridge.nodes.push(node)
         return node
     }
@@ -67,6 +117,21 @@ Rectangle {
         var beamComponent = Qt.createComponent("RgBeam.qml");
         var beam = beamComponent.createObject(window,
             { "leftAnchor": left, "rightAnchor": right });
+        beam.beamRemoved.connect(handleBeamRemoved)
         bridge.beams.push(beam)
+    }
+
+    Component.onCompleted: {
+        var structures = [
+            { "x": 500, "y": 300 },
+            { "x": 1000, "y": 300 }
+        ];
+
+        for (var i = 0; i < structures.length; ++i) {
+            var structure = structures[i]
+            var node = createNode(snapToGrid(structure.x),
+                                  snapToGrid(structure.y))
+            node.structural = true
+        }
     }
 }

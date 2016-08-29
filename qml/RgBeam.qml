@@ -1,14 +1,27 @@
 import QtQuick 2.2
+import "qrc:/js/colormap.js" as ColorMap
 
 Rectangle {
     id: beam
-    color: "blue"
 
     property var leftAnchor
     property var rightAnchor
+    property var stress
+    signal beamRemoved(var beam)
 
     x: leftAnchor.x + leftAnchor.width / 2  - 4
     y: leftAnchor.y + leftAnchor.height / 2 - height / 2
+    z: 1
+
+    function calcColor() {
+        if (stress === undefined) {
+            return "lightgrey"
+        }
+        var c = ColorMap.map(Math.abs(stress) / 8000)
+        return Qt.rgba(c[0], c[1], c[2], 1)
+    }
+
+    color: calcColor()
 
     function calcWidth() {
         var dx = rightAnchor.x - leftAnchor.x
@@ -23,7 +36,7 @@ Rectangle {
     }
 
     width: calcWidth() + 8
-    height: 10
+    height: 12
 
     border.color: "black"
     border.width: 1.5
@@ -33,5 +46,15 @@ Rectangle {
         origin.x: 4
         origin.y: beam.height / 2
         angle: calcAngle() * (180 / Math.PI)
+    }
+
+    MouseArea {
+        anchors.fill: parent
+        acceptedButtons: Qt.RightButton
+        onClicked: {
+            if (mouse.button === Qt.RightButton) {
+                beamRemoved(beam)
+            }
+        }
     }
 }

@@ -12,9 +12,11 @@ endif()
 
 set(SOURCES
  main.cxx
+ FEAnalyzer.cxx
 )
 
 set(QOBJECT_HEADERS
+ FEAnalyzer.h
 )
 qt5_wrap_cpp(MOC_SOURCES ${QOBJECT_HEADERS})
 
