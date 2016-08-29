@@ -1,6 +1,7 @@
 import QtQuick 2.2
 import QtQuick.Controls 1.1
 import QtQuick.Window 2.1
+import QtMultimedia 5.6
 
 ApplicationWindow {
     id: window
@@ -11,7 +12,15 @@ ApplicationWindow {
     FontLoader {
         source: "qrc:/fonts/SourceSansPro-Regular.otf"
     }
-
+/*
+    Audio {
+        id: bgMusic
+        //source: "qrc:/assets/caravanLooping.ogg"
+        source: "file:///C:/Users/KongoniBridge/assets/caravanLooping.wav"
+        loops: Audio.Infinite
+        autoPlay: true
+    }
+*/
     width: 1440
     height: 900
 

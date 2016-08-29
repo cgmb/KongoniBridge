@@ -3,11 +3,13 @@ project(bridge)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 find_package(Qt5 COMPONENTS Core Gui Qml Quick REQUIRED)
 include_directories(${CMAKE_BINARY_DIR})
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -Wextra")
-set(CMAKE_INSTALL_RPATH "$ORIGIN/lib")
+if(UNIX)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -Wextra")
+  set(CMAKE_INSTALL_RPATH "$ORIGIN/lib")
 
-if(CMAKE_BUILD_TYPE STREQUAL "" OR CMAKE_BUILD_TYPE STREQUAL "Debug")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -Werror")
+  if(CMAKE_BUILD_TYPE STREQUAL "" OR CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -Werror")
+  endif()
 endif()
 
 set(SOURCES

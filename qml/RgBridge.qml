@@ -1,4 +1,5 @@
 import QtQuick 2.2
+import QtMultimedia 5.6
 import rustgolem 1.0
 
 Rectangle {
@@ -22,6 +23,18 @@ Rectangle {
         }
     }
 
+    SoundEffect {
+        id: constructSound
+        source: "qrc:/assets/construct.wav"
+        volume: 0.5
+    }
+
+    SoundEffect {
+        id: deconstructSound
+        source: "qrc:/assets/deconstruct.wav"
+        volume: 0.5
+    }
+
     function doAnalysis() {
         analyzer.processBridge(nodes, beams)
     }
@@ -42,11 +55,12 @@ Rectangle {
             if (selectedNode)
                 createBeam(selectedNode, node)
             node.selected = true
+            constructSound.play()
         }
     }
 
     function tryCreateBeamToNode(node) {
-        if (selectedNode) {
+        if (selectedNode && node !== selectedNode) {
             var alreadyExists = false
             for (var i = 0; i < bridge.beams.length; ++i) {
                 var beam = bridge.beams[i]
@@ -57,8 +71,10 @@ Rectangle {
                     alreadyExists = true
                 }
             }
-            if (!alreadyExists)
+            if (!alreadyExists) {
                 createBeam(selectedNode, node)
+                constructSound.play()
+            }
         }
     }
 
@@ -85,11 +101,13 @@ Rectangle {
 
         removeItemFromList(node, bridge.nodes)
         node.destroy()
+        deconstructSound.play()
     }
 
     function handleBeamRemoved(beam) {
         removeItemFromList(beam, bridge.beams)
         beam.destroy()
+        deconstructSound.play()
     }
 
     function removeItemFromList(item, list) {

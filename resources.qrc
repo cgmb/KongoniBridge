@@ -10,5 +10,7 @@
         <file>qml/RgBridge.qml</file>
         <file>qml/RgBeam.qml</file>
         <file>js/colormap.js</file>
+        <file>assets/construct.wav</file>
+        <file>assets/deconstruct.wav</file>
     </qresource>
 </RCC>
