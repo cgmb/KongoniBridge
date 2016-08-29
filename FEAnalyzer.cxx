@@ -9,6 +9,7 @@
 #include <QVariant>
 #include <QVariantList>
 #include <QQmlProperty>
+#include <iostream>
 
 struct InputNode
 {
@@ -134,7 +135,7 @@ Output computeDisplacements(std::vector<InputNode> inNodes,
     }
 
     Eigen::VectorXf& F = externalForces;
-
+    // std::cout << F<< std::endl;
     // solve [K]{u}={F}
     Eigen::VectorXf u = K.fullPivLu().solve(F);
 
@@ -179,16 +180,16 @@ int index_of(const std::vector<T>& v, const T& value) {
 void addBeamWeightToNodes(Eigen::VectorXf& forces,
   const std::vector<InputNode>& inNodes,
   const std::vector<InputMember>& inMembers) {
-  const float density = 1.0;
-  const float g = 9.81;
+  const float density = 1.0; // kg/m^3
+  const float g = -9.81; //gravity m/s^2 in the y axis
   for (unsigned i = 0; i < inMembers.size(); ++i) {
     Vec2f v = inNodes[inMembers[i].nodeJ].pos - inNodes[inMembers[i].nodeI].pos;
     float length = magnitude(v);
     float mass = density * length * inMembers[i].area;
     float force = mass * g;
     float force_per_node = force / 2;
-    forces(2*inMembers[i].nodeI) += force_per_node;
-    forces(2*inMembers[i].nodeJ) += force_per_node;
+    forces(2*inMembers[i].nodeI+1) += force_per_node;
+    forces(2*inMembers[i].nodeJ+1) += force_per_node;
   }
 }
 
