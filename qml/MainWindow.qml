@@ -46,18 +46,4 @@ ApplicationWindow {
         anchors.bottom: parent.bottom
         anchors.right: parent.right
     }
-
-    RgText {
-        id: description
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: parent.top
-        anchors.margins: 20
-        text: "If you build it, they will come..."
-        wrapMode: Text.WordWrap
-    }
-
-   Component.onCompleted: {
-
-   }
 }

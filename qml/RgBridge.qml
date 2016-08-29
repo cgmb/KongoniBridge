@@ -14,16 +14,17 @@ Image {
 
     Timer {
         id: analysisTimer
-        interval: 25
+        interval: 50
         onTriggered: analyzer.step()
     }
 
     FEAnalyzer {
         id: analyzer
+        relaxation: 0.25
         onProcessingComplete: {
             for (var i = 0; i < nodeOffsets.length; ++i) {
-                nodes[i].x += nodeOffsets[i].x
-                nodes[i].y += nodeOffsets[i].y
+                nodes[i].x += nodeOffsets[i].x * relaxation
+                nodes[i].y += nodeOffsets[i].y * relaxation
             }
             for (var i = 0; i < beamStress.length; ++i) {
                 beams[i].stress = beamStress[i]
@@ -32,25 +33,33 @@ Image {
         }
         onFailed: {
             analysisTimer.stop()
-            gameText.visible = true
+            gameTextBox.visible = true
             gameText.text = "Bridge Collapsed!"
-            gameText.color = "red"
+            gameText.color = "#fd9500"
         }
         onConverged: {
             analysisTimer.stop()
-            gameText.visible = true
+            gameTextBox.visible = true
             gameText.text = "Success!"
-            gameText.color = "green"
+            gameText.color = "#00b050"
         }
     }
 
-    RgText {
-        id: gameText
+    Rectangle {
+        id: gameTextBox
+        color: Qt.rgba(0, 0, 0, 0.5)
+        radius: 10
         z: 3
+        visible: false
         anchors.centerIn: parent
-        font.pointSize: 48
-        style: Text.Outline
-        styleColor: "black"
+        width: gameText.width + 20
+        height: gameText.height + 20
+
+        RgText {
+            id: gameText
+            anchors.centerIn: parent
+            font.pointSize: 48
+        }
     }
 
     SoundEffect {
@@ -86,7 +95,7 @@ Image {
                 createBeam(selectedNode, node)
             node.selected = true
             constructSound.play()
-            gameText.visible = false
+            gameTextBox.visible = false
         }
     }
 
@@ -105,6 +114,7 @@ Image {
             if (!alreadyExists) {
                 createBeam(selectedNode, node)
                 constructSound.play()
+                gameTextBox.visible = false
             }
         }
     }

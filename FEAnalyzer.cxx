@@ -248,10 +248,17 @@ Input extractInput(const QVariantList& nodes,
 
 FEAnalyzer::FEAnalyzer() {
     in_ = new Input;
+    relaxation_ = 1.f;
 }
 
 FEAnalyzer::~FEAnalyzer() {
     delete in_;
+}
+
+void FEAnalyzer::applyOutputToInput(const Output& o) {
+    for (unsigned i = 0; i < o.nodeOffsets.size(); ++i) {
+        in_->nodes[i].pos += (o.nodeOffsets[i] * relaxation_);
+    }
 }
 
 void FEAnalyzer::processBridge(const QVariantList& nodes,
@@ -263,6 +270,7 @@ void FEAnalyzer::processBridge(const QVariantList& nodes,
     gravityForces_ = forces;
     Output o = computeDisplacements(in_->nodes, in_->members, forces);
     stressForces_ = o.stressForces;
+    applyOutputToInput(o);
     emitCompleted(o);
 }
 
