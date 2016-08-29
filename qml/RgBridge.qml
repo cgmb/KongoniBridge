@@ -2,10 +2,11 @@ import QtQuick 2.2
 import QtMultimedia 5.6
 import rustgolem 1.0
 
-Rectangle {
+Image {
     id: bridge
-    color: 'transparent'
-
+    //color: 'transparent'
+    //source: "qrc:/assets/colored_desert.png" // desert background
+    source: "qrc:/assets/mountainBG.png" // ice background
     property var selectedNode: null
     property var nodes: []
     property var beams: []
@@ -140,9 +141,19 @@ Rectangle {
     }
 
     Component.onCompleted: {
+        /*
+        // support locations for Desert
         var structures = [
-            { "x": 500, "y": 300 },
-            { "x": 1000, "y": 300 }
+            { "x": 450, "y": 660},
+            { "x": 1100, "y": 650 }
+        ];
+        */
+
+        // support locations for ice
+        var structures = [
+            { "x": 350, "y": 645},
+            { "x": 1250, "y": 645},
+            {"x": 795, "y": 825}
         ];
 
         for (var i = 0; i < structures.length; ++i) {

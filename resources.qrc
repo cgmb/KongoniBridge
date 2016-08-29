@@ -10,5 +10,7 @@
         <file>js/colormap.js</file>
         <file>assets/construct.wav</file>
         <file>assets/deconstruct.wav</file>
+        <file>assets/colored_desert.png</file>
+        <file>assets/mountainBG.png</file>
     </qresource>
 </RCC>
