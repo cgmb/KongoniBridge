@@ -1,6 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>fonts/SourceSansPro-Regular.otf</file>
+        <file>qml/Instructions.qml</file>
         <file>qml/MainWindow.qml</file>
         <file>qml/RgText.qml</file>
         <file>qml/RgButton.qml</file>
@@ -12,5 +13,6 @@
         <file>assets/deconstruct.wav</file>
         <file>assets/colored_desert.png</file>
         <file>assets/mountainBG.png</file>
+        <file>assets/fadedLandscape.png</file>
     </qresource>
 </RCC>

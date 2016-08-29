@@ -46,4 +46,8 @@ ApplicationWindow {
         anchors.bottom: parent.bottom
         anchors.right: parent.right
     }
+
+    Instructions {
+        anchors.fill: parent
+    }
 }
