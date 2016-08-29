@@ -12,15 +12,13 @@ ApplicationWindow {
     FontLoader {
         source: "qrc:/fonts/SourceSansPro-Regular.otf"
     }
-/*
+
     Audio {
-        id: bgMusic
-        //source: "qrc:/assets/caravanLooping.ogg"
-        source: "file:///C:/Users/KongoniBridge/assets/caravanLooping.wav"
+        source: "../assets/caravanLooping.wav"
         loops: Audio.Infinite
         autoPlay: true
     }
-*/
+
     width: 1440
     height: 900
 

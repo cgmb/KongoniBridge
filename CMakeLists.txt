@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(bridge)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
-find_package(Qt5 COMPONENTS Core Gui Qml Quick REQUIRED)
+find_package(Qt5 COMPONENTS Core Gui Qml Quick Multimedia REQUIRED)
 include_directories(${CMAKE_BINARY_DIR})
 if(UNIX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -Wextra")
@@ -33,6 +33,8 @@ add_definitions(-DEIGEN_MPL2_ONLY)
 
 add_executable(bridge ${SOURCES} ${MOC_SOURCES} ${QRC_SOURCES})
 qt5_use_modules(bridge Core Gui Qml Quick)
+
+configure_file(assets/caravanLooping.wav assets/caravanLooping.wav COPYONLY)
 
 install(TARGETS bridge
   RUNTIME DESTINATION .
