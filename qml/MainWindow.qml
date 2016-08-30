@@ -14,7 +14,7 @@ ApplicationWindow {
     }
 
     Audio {
-        source: "../assets/caravanLooping.wav"
+        source: "qrc:/assets/caravanLooping.ogg"
         loops: Audio.Infinite
         autoPlay: true
     }
@@ -25,16 +25,6 @@ ApplicationWindow {
     RgBridge {
         id: bridge
         anchors.fill: parent
-    }
-
-    RgButton {
-        id: quitButton
-        text: "Quit"
-        onClicked: Qt.quit()
-
-        anchors.margins: 20
-        anchors.bottom: parent.bottom
-        anchors.left: parent.left
     }
 
     RgButton {
