@@ -193,12 +193,12 @@ int index_of(const std::vector<T>& v, const T& value) {
 void addInitialBeamWeightToNodes(Eigen::VectorXf& forces,
   const std::vector<InputNode>& inNodes,
   const std::vector<InputMember>& inMembers) {
-  const float density = 1.0; // kg/m^3
-  const float g = -9.81; //gravity m/s^2 in the y axis
+  const float density = 7850.0f; // kg/m^3
+  const float g = -9.81f; //gravity m/s^2 in the y axis
   for (unsigned i = 0; i < inMembers.size(); ++i) {
     Vec2f v = inNodes[inMembers[i].nodeJ].pos - inNodes[inMembers[i].nodeI].pos;
     float length = magnitude(v);
-    float mass = density * length * inMembers[i].area;
+    float mass = density * (length/10) * (inMembers[i].area/1e6);
     float force = mass * g;
     float force_per_node = force / 2;
     forces(2*inMembers[i].nodeI+1) += force_per_node;
@@ -238,7 +238,7 @@ Input extractInput(const QVariantList& nodes,
         QVariant rav = QQmlProperty::read(beam, QStringLiteral("rightAnchor"));
         QQuickItem* ra = qobject_cast<QQuickItem*>(rav.value<QObject*>());
         int right_index = index_of(items, ra);
-        InputMember m = { 1.0, 1e5,
+        InputMember m = { 10100.0, 200,
                           (unsigned)left_index, (unsigned)right_index };
         inMembers.push_back(m);
     }
