@@ -11,16 +11,9 @@ Image {
     property var nodes: []
     property var beams: []
 
-
-    Timer {
-        id: analysisTimer
-        interval: 50
-        onTriggered: analyzer.step()
-    }
-
     FEAnalyzer {
         id: analyzer
-        relaxation: 0.25
+        relaxation: 1
         onProcessingComplete: {
             for (var i = 0; i < nodeOffsets.length; ++i) {
                 nodes[i].index = i;
@@ -31,16 +24,13 @@ Image {
                 beams[i].index = i;
                 beams[i].stress = beamStress[i]
             }
-            analysisTimer.start()
         }
         onFailed: {
-            analysisTimer.stop()
             gameTextBox.visible = true
             gameText.text = "Bridge Collapsed!"
             gameText.color = "#fd9500"
         }
         onConverged: {
-            analysisTimer.stop()
             gameTextBox.visible = true
             gameText.text = "Success!"
             gameText.color = "#00b050"

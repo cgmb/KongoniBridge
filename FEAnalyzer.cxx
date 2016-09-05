@@ -13,14 +13,14 @@
 
 struct InputNode
 {
-    Vec2f pos; // a vector2 with the (x , y) postion of the node in world space in mm
+    Vec2f pos; // a vector2 with the (x , y) postion of the node in world space in m
     bool isSupport; // true if input node cannot move
 };
 
 struct InputMember
 {
-    float area; // cross sectioal area of the memmber in mm^2
-    float youngsModulus; // the youngs modulus of the member in (kN / mm^2) or GPa
+    float area; // cross sectional area of the member in m^2
+    float youngsModulus; // the youngs modulus of the member in (N / m^2) or Pa
     unsigned nodeI; // the starting node index of the member
     unsigned nodeJ; // the end node index of the member
 };
@@ -29,43 +29,47 @@ struct Output {
     std::vector<Vec2f> nodeOffsets;
     std::vector<float> memberStressIndicator;
     Eigen::VectorXf stressForces;
+    Eigen::VectorXf error;
 };
 
 struct Node
 {
     int id; // the nodes id#
-    Vec2f pos; // a vector2 with the (x , y) postion of the node in world space in mm
+    Vec2f pos; // a vector2 with the (x , y) postion of the node in world space in m
     bool isSupport; // true if input node cannot move
 };
 
 struct Member
 {
-    float area; // cross sectioal area of the memmber in mm^2
-    float youngsModulus; // the youngs modulus of the member in (kN / mm^2) or GPa
+    float area; // cross sectioal area of the memmber in m^2
+    float youngsModulus; // the youngs modulus of the member in (N/m^2) or Pa
     Node nodeI; // the starting node of the member
     Node nodeJ; // the end node of the member
-    float length; // the length of the member in mm
+    float length; // the length of the member in m
     float theta; // the angle of the beam
     std::array<unsigned, 4> dofs; // global degrees of freedom
     // values above this line should be supplied when passing into ComputeDisplacements
-    float stress; // will be the stress in the member in (kN/mm^2)
-    Eigen::MatrixXf k; // the local stiffness matrix
+    float stress; // will be the stress in the member in (N/m^2)
+    Eigen::MatrixXf k_global; // the local stiffness matrix
+    Eigen::MatrixXf L; // transformation Matrix
 };
 
+const float m_per_px = 1.0f;
+
 float pixelToWorldX(float x) {
-    return x;
+    return x * m_per_px;
 }
 
 float worldToPixelOffsetX(float x) {
-    return x;
+    return x / m_per_px;
 }
 
 float pixelToWorldY(float y) {
-    return 900 - y;
+    return (900 - y) * m_per_px;
 }
 
 float worldToPixelOffsetY(float y) {
-    return -y;
+    return -y / m_per_px;
 }
 
 Output computeDisplacements(std::vector<InputNode> inNodes,
@@ -102,41 +106,46 @@ Output computeDisplacements(std::vector<InputNode> inNodes,
 
         float C = cos(m.theta);
         float S = sin(m.theta);
-
+        Eigen::MatrixXf matC(2,4);
+        matC << C,S,0,0,
+                0,0,C,S;
+        // m.L = matC;
         //construct the member stiffness matrixes 'k' for each member
         Eigen::MatrixXf matA(2, 2);
         matA << C*C, C*S, C*S, S*S;
         Eigen::MatrixXf k(4, 4);
         k << matA, -matA, -matA, matA;
-
-        m.k = (m.area * m.youngsModulus / m.length) * k;
+        // m.L.transpose();
+        m.k_global = (m.area * m.youngsModulus / m.length) * k;
         members.push_back(m);
     }
 
     Eigen::MatrixXf K(2*nodes.size(), 2*nodes.size());
     K.setZero();  // new matrix size dof, dof, of floats is the struture stiffness matrix
-    for (Member& member : members) {
+    for (const Member& member : members) {
         //distribute the member stiffnesses to the structure stiffness matrix
         for (unsigned i = 0; i < 4; i++) {
             for (unsigned j = 0; j < 4; j++) {
                 int A = member.dofs[i];
                 int B = member.dofs[j];
-                K(A, B) += member.k(i, j);
+                K(A, B) += member.k_global(i, j);
             }
         }
     }
 
-    for (Node& node : nodes) {
+    Eigen::VectorXf& F = externalForces;
+    for (const Node& node : nodes) {
         if (node.isSupport) {
             K.row(node.id * 2).setZero();
             K.col(node.id * 2).setZero();
             K.row(node.id * 2 + 1).setZero();
             K.col(node.id * 2 + 1).setZero();
+
+            F.row(node.id * 2).setZero();
+            F.row(node.id * 2 + 1).setZero();
         }
     }
 
-    Eigen::VectorXf& F = externalForces;
-    // std::cout << F<< std::endl;
     // solve [K]{u}={F}
     Eigen::VectorXf u = K.fullPivLu().solve(F);
 
@@ -146,14 +155,9 @@ Output computeDisplacements(std::vector<InputNode> inNodes,
         Vec2f displacementJ = { u(m.nodeJ.id * 2), u(m.nodeJ.id * 2 + 1) };
         Vec2f totalDisplacement = displacementJ - displacementI;
         Vec2f memberVector = m.nodeJ.pos - m.nodeI.pos;
-        Vec2f memberDirection = memberVector / magnitude(memberVector);
+        Vec2f memberDirection = memberVector / magnitude(memberVector); // todo: ensure members are not 0-length
         float projectedDisplacement = dot(totalDisplacement, memberDirection);
         m.stress = projectedDisplacement * m.youngsModulus / m.length;
-        /*
-        std::cout << i << std::endl;
-        std::cout << "Total Displacement: " << totalDisplacement.x << "," << totalDisplacement.y << std::endl;
-        std::cout << "Stress: " << m.stress << std::endl;
-        */
     }
 
     Output o;
@@ -178,6 +182,7 @@ Output computeDisplacements(std::vector<InputNode> inNodes,
         stressForces(2*member.nodeJ.id+1) += -yForce;
     }
     o.stressForces = stressForces;
+    o.error = F - (K*u);
     return o;
 }
 
@@ -199,7 +204,7 @@ void addInitialBeamWeightToNodes(Eigen::VectorXf& forces,
   for (unsigned i = 0; i < inMembers.size(); ++i) {
     Vec2f v = inNodes[inMembers[i].nodeJ].pos - inNodes[inMembers[i].nodeI].pos;
     float length = magnitude(v);
-    float mass = density * (length/10) * (inMembers[i].area/1e6);
+    float mass = density * length * inMembers[i].area;
     float force = mass * g;
     float force_per_node = force / 2;
     forces(2*inMembers[i].nodeI+1) += force_per_node;
@@ -239,8 +244,11 @@ Input extractInput(const QVariantList& nodes,
         QVariant rav = QQmlProperty::read(beam, QStringLiteral("rightAnchor"));
         QQuickItem* ra = qobject_cast<QQuickItem*>(rav.value<QObject*>());
         int right_index = index_of(items, ra);
-        InputMember m = { 10100.0, 200,
-                          (unsigned)left_index, (unsigned)right_index };
+        InputMember m;
+        m.area = 10100.f / 1e6f;
+        m.youngsModulus = 200.f * 1e9f;
+        m.nodeI = (unsigned)left_index;
+        m.nodeJ = (unsigned)right_index;
         inMembers.push_back(m);
     }
 
@@ -288,30 +296,38 @@ void FEAnalyzer::emitCompleted(const Output& o) {
         beamStress.append(QVariant::fromValue(o.memberStressIndicator[i]));
     }
     emit processingComplete(nodeOffsets, beamStress);
+
+    // check for success or failure
+    bool onlyLowError = std::all_of(
+        o.error.data(),
+        o.error.data() + o.error.rows(), [](float forceError){
+        return fabsf(forceError) < 10.f;
+    });
+    bool onlyLowStress = std::all_of(
+        o.memberStressIndicator.cbegin(),
+        o.memberStressIndicator.cend(), [](float stress){
+        return fabsf(stress) < 3.5e8;
+    });
+    bool onlySmallOffsets = std::all_of(
+        o.nodeOffsets.cbegin(),
+        o.nodeOffsets.cend(), [](Vec2f offset){
+        return fabsf(offset.x) < 100.f && fabsf(offset.y) < 100.f;
+    });
+
+    if (!onlyLowError || !onlyLowStress || !onlySmallOffsets) {
+        emit failed();
+    } else {
+        emit converged();
+    }
 }
 
 void FEAnalyzer::step() {
     Eigen::VectorXf forces = gravityForces_ + stressForces_;
     Output o = computeDisplacements(in_->nodes, in_->members, forces);
+    Eigen::VectorXf stressDifferences = stressForces_ - o.stressForces;
     stressForces_ = o.stressForces;
+    applyOutputToInput(o);
     emitCompleted(o);
-
-    bool onlyLowStress = std::all_of(
-        o.memberStressIndicator.cbegin(),
-        o.memberStressIndicator.cend(), [](float stress){
-        return fabs(stress) < 8000;
-    });
-    if (!onlyLowStress) {
-        emit failed();
-    }
-    bool onlySmallOffsets = std::all_of(
-        o.nodeOffsets.cbegin(),
-        o.nodeOffsets.cend(), [](Vec2f offset){
-        return fabs(offset.x) < 10.f && fabs(offset.y) < 10.f;
-    });
-    if (onlySmallOffsets) {
-        emit converged();
-    }
 }
 
 /*

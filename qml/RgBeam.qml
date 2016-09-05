@@ -8,7 +8,7 @@ Rectangle {
     property var leftAnchor
     property var rightAnchor
     property var stress
-    property var maxStress: 350
+    property var maxStress: 3.5e8
     signal beamRemoved(var beam)
 
     x: leftAnchor.x + leftAnchor.width / 2  - 4
@@ -20,18 +20,14 @@ Rectangle {
             return "lightgrey"
         }
 
-        var normalizedStress = Math.abs(stress) / (2 * maxStress)
-        if (normalizedStress >1){
-            normalizedStress = 1 / 2
-        } else{
-            normalizedStress = normalizedStress / 2
-        }
-        console.log (normalizedStress)
-        if (stress > 0){
-            normalizedStress = 0.5 + normalizedStress
-        } else {
-            normalizedStress = 0.5 - normalizedStress
-        }
+        var normalizedStress = stress / maxStress;
+        if (normalizedStress > 1)
+            normalizedStress = 1;
+        else if (normalizedStress < -1)
+            normalizedStress = -1;
+
+        normalizedStress += 1;
+        normalizedStress /= 2;
 
         var c = ColorMap.map(normalizedStress)
         return Qt.rgba(c[0], c[1], c[2], 1)
