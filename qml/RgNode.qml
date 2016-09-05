@@ -5,6 +5,7 @@ Rectangle {
     color: selected ? "white" : structural ? "grey" : "lightsteelblue"
     z: 2
 
+    property int index: -1
     property bool structural: false
     property bool selected: false
     signal nodeSelected(var node)
@@ -22,6 +23,14 @@ Rectangle {
         if (selected) {
             nodeSelected(node)
         }
+    }
+
+    Text {
+        text: node.index
+        anchors.centerIn: parent
+        color: "green"
+        font.pointSize: 36
+        visible: node.index >= 0
     }
 
     MouseArea {

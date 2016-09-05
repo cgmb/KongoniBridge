@@ -23,10 +23,12 @@ Image {
         relaxation: 0.25
         onProcessingComplete: {
             for (var i = 0; i < nodeOffsets.length; ++i) {
+                nodes[i].index = i;
                 nodes[i].x += nodeOffsets[i].x * relaxation
                 nodes[i].y += nodeOffsets[i].y * relaxation
             }
             for (var i = 0; i < beamStress.length; ++i) {
+                beams[i].index = i;
                 beams[i].stress = beamStress[i]
             }
             analysisTimer.start()

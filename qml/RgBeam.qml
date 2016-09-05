@@ -4,6 +4,7 @@ import "qrc:/js/colormap.js" as ColorMap
 Rectangle {
     id: beam
 
+    property int index: -1
     property var leftAnchor
     property var rightAnchor
     property var stress
@@ -56,6 +57,14 @@ Rectangle {
     border.color: "black"
     border.width: 1.5
     radius: 4
+
+    Text {
+        text: beam.index
+        anchors.centerIn: parent
+        color: "green"
+        font.pointSize: 36
+        visible: beam.index >= 0
+    }
 
     transform: Rotation {
         origin.x: 4
