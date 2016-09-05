@@ -7,8 +7,8 @@ Rectangle {
     property int index: -1
     property var leftAnchor
     property var rightAnchor
-    property var stress
-    property var maxStress: 3.5e8
+    property real stress
+    property real maxStress: 3.5e8
     signal beamRemoved(var beam)
 
     x: leftAnchor.x + leftAnchor.width / 2  - 4
