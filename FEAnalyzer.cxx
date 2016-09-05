@@ -166,11 +166,12 @@ Output computeDisplacements(std::vector<InputNode> inNodes,
         o.memberStressIndicator[i] = members[i].stress;
     }
     Eigen::VectorXf stressForces(2*nodes.size());
+    stressForces.setZero();
     for (unsigned i = 0; i < members.size(); ++i) {
         const Member& member = members[i];
         float alongBeamForce = member.area * member.stress;
-        float xForce = sinf(member.theta) * alongBeamForce;
-        float yForce = cosf(member.theta) * alongBeamForce;
+        float xForce = cosf(member.theta) * alongBeamForce;
+        float yForce = sinf(member.theta) * alongBeamForce;
         stressForces(2*member.nodeI.id) += xForce;
         stressForces(2*member.nodeI.id+1) += yForce;
         stressForces(2*member.nodeJ.id) += -xForce;
