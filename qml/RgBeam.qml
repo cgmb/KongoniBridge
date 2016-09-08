@@ -7,7 +7,7 @@ Rectangle {
     property int index: -1
     property var leftAnchor
     property var rightAnchor
-    property real stress
+    property var stress
     property real maxStress: 3.5e8
     signal beamRemoved(var beam)
 
@@ -15,17 +15,16 @@ Rectangle {
     y: leftAnchor.y + leftAnchor.height / 2 - height / 2
     z: 1
 
+    function clamp(low, x, high) {
+        return Math.min(Math.max(low, x), high)
+    }
+
     function calcColor() {
         if (stress === undefined) {
             return "lightgrey"
         }
 
-        var normalizedStress = stress / maxStress;
-        if (normalizedStress > 1)
-            normalizedStress = 1;
-        else if (normalizedStress < -1)
-            normalizedStress = -1;
-
+        var normalizedStress = clamp(-1, stress / maxStress, 1)
         normalizedStress += 1;
         normalizedStress /= 2;
 
