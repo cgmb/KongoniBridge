@@ -32,6 +32,8 @@ ApplicationWindow {
         text: "Test"
         onClicked: bridge.doAnalysis()
 
+        visible: bridge.state == "build"
+
         anchors.margins: 20
         anchors.bottom: parent.bottom
         anchors.right: parent.right

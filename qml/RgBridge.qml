@@ -7,9 +7,31 @@ Image {
     //color: 'transparent'
     //source: "qrc:/assets/colored_desert.png" // desert background
     source: "qrc:/assets/mountainBG.png" // ice background
+
     property var selectedNode: null
     property var nodes: []
     property var beams: []
+    property var save: ({})
+
+    property bool editingEnabled: state == "build"
+
+    states: [
+        State {
+            name: "build"
+            PropertyChanges {
+                target: gameTextBox
+                visible: false
+            }
+            StateChangeScript {
+                name: "restoreBridge"
+                script: restoreBridgeFromTesting()
+            }
+        },
+        State {
+            name: "test"
+        }
+
+    ]
 
     FEAnalyzer {
         id: analyzer
@@ -66,7 +88,29 @@ Image {
         volume: 0.5
     }
 
+    function saveBridgeForTesting() {
+        var xPositions = []
+        var yPositions = []
+        for (var i = 0; i < nodes.length; ++i) {
+            xPositions.push(nodes[i].x)
+            yPositions.push(nodes[i].y)
+        }
+        save.xPositions = xPositions;
+        save.yPositions = yPositions;
+    }
+
+    function restoreBridgeFromTesting() {
+        if (save.xPositions && save.yPositions) {
+            for (var i = 0; i < nodes.length; ++i) {
+                nodes[i].x = save.xPositions[i]
+                nodes[i].y = save.yPositions[i]
+            }
+        }
+    }
+
     function doAnalysis() {
+        bridge.state = "test"
+        saveBridgeForTesting()
         analyzer.processBridge(nodes, beams)
     }
 
@@ -79,15 +123,20 @@ Image {
     }
 
     MouseArea {
+        id: mouseArea
         anchors.fill: parent
         onClicked: {
+            if (bridge.state == "test") {
+                bridge.state = "build"
+                return
+            }
+
             var node = createNode(snapToGrid(mouse.x),
                                   snapToGrid(mouse.y))
             if (selectedNode)
                 createBeam(selectedNode, node)
             node.selected = true
             constructSound.play()
-            gameTextBox.visible = false
         }
     }
 
@@ -106,12 +155,14 @@ Image {
             if (!alreadyExists) {
                 createBeam(selectedNode, node)
                 constructSound.play()
-                gameTextBox.visible = false
+                bridge.state = "build"
             }
         }
     }
 
     function updateSelection(node) {
+        bridge.state = "build"
+
         if (selectedNode) {
             selectedNode.selected = false
         }
@@ -151,7 +202,7 @@ Image {
     }
 
     function createNode(x, y)
-    {
+    {        
         var nodeComponent = Qt.createComponent("RgNode.qml");
         var node = nodeComponent.createObject(bridge, { "x": x, "y": y });
         node.x -=  node.width / 2
@@ -159,6 +210,7 @@ Image {
         node.nodeSelected.connect(updateSelection)
         node.nodeRemoved.connect(handleNodeRemoved)
         node.wantBeamTo.connect(tryCreateBeamToNode)
+        node.editingEnabled = Qt.binding(function () { return bridge.editingEnabled })
         bridge.nodes.push(node)
         return node
     }
@@ -169,6 +221,7 @@ Image {
         var beam = beamComponent.createObject(bridge,
             { "leftAnchor": left, "rightAnchor": right });
         beam.beamRemoved.connect(handleBeamRemoved)
+        beam.editingEnabled = Qt.binding(function () { return bridge.editingEnabled })
         bridge.beams.push(beam)
     }
 
@@ -194,5 +247,7 @@ Image {
                                   snapToGrid(structure.y))
             node.structural = true
         }
+
+        state = "build"
     }
 }

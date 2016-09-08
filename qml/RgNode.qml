@@ -8,6 +8,7 @@ Rectangle {
     property int index: -1
     property bool structural: false
     property bool selected: false
+    property bool editingEnabled: true
     signal nodeSelected(var node)
     signal nodeRemoved(var node)
     signal wantBeamTo(var node)
@@ -50,6 +51,8 @@ Rectangle {
         }
         drag.target: node.structural ? null : node
         drag.threshold: 0
+
+        enabled: node.editingEnabled
     }
 
     NumberAnimation on scale {

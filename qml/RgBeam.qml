@@ -9,6 +9,7 @@ Rectangle {
     property var rightAnchor
     property var stress
     property real maxStress: 3.5e8
+    property bool editingEnabled: true
     signal beamRemoved(var beam)
 
     x: leftAnchor.x + leftAnchor.width / 2  - 4
@@ -75,5 +76,6 @@ Rectangle {
                 beamRemoved(beam)
             }
         }
+        enabled: beam.editingEnabled
     }
 }
