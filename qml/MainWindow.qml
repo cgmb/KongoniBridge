@@ -38,7 +38,32 @@ ApplicationWindow {
         anchors.bottom: parent.bottom
         anchors.right: parent.right
     }
+/*
+    Slider {
+        id: stressSlider
+        minimumValue: -3.5e8
+        maximumValue: 3.5e8
 
+        onValueChanged: {
+            for (var i = 0; i < bridge.beams.length; ++i) {
+                bridge.beams[i].stress = value
+            }
+        }
+
+        anchors.margins: 20
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        width: 600
+    }
+
+    Text {
+        id: stressValue
+        text: 'stress: ' + Math.round(stressSlider.value / 1e6) + 'MPa'
+        anchors.margins: 20
+        anchors.bottom: stressSlider.top
+        anchors.left: parent.left
+    }
+*/
     Instructions {
         anchors.fill: parent
     }
