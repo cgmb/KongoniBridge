@@ -26,9 +26,17 @@ Image {
                 name: "restoreBridge"
                 script: restoreBridgeFromTesting()
             }
+            PropertyChanges {
+                target: mouseArea
+                acceptedButtons: Qt.LeftButton
+            }
         },
         State {
             name: "test"
+            PropertyChanges {
+                target: mouseArea
+                acceptedButtons: Qt.AllButtons
+            }
         }
 
     ]
