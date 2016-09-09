@@ -528,8 +528,8 @@ var _viridis_data =
 */
 function linear2(x) {
      // use only half of each colour map
-    var idx = Math.floor(256 * x)
-    idx = Math.min(idx, 255)
+    var idx = Math.floor(128 * Math.abs(x))
+    idx = Math.min(idx, 127)
     idx = Math.max(idx, 0)
     return x < 0 ? _inferno_data[idx] : _viridis_data[idx]
 }
