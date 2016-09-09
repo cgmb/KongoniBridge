@@ -112,6 +112,9 @@ Image {
                 nodes[i].y = save.yPositions[i]
             }
         }
+        for (i = 0; i < beams.length; ++i) {
+            beams[i].stress = 0
+        }
     }
 
     function doAnalysis() {

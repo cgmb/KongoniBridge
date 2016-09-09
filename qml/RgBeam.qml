@@ -6,7 +6,7 @@ Rectangle {
 
     property var leftAnchor
     property var rightAnchor
-    property var stress
+    property real stress: 0
     property real maxStress: 3.5e8
     property bool editingEnabled: true
     signal beamRemoved(var beam)
@@ -15,20 +15,13 @@ Rectangle {
     y: leftAnchor.y + leftAnchor.height / 2 - height / 2
     z: 1
 
-    function clamp(low, x, high) {
-        return Math.min(Math.max(low, x), high)
-    }
-
     function calcColor() {
-        if (stress === undefined) {
+        if (stress === 0) {
             return "lightgrey"
         }
 
-        var normalizedStress = clamp(-1, stress / maxStress, 1)
-        normalizedStress += 1;
-        normalizedStress /= 2;
-
-        var c = ColorMap.map(normalizedStress)
+        var stressRatio = stress / maxStress
+        var c = ColorMap.linear2(stressRatio)
         return Qt.rgba(c[0], c[1], c[2], 1)
     }
 
