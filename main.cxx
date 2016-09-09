@@ -17,7 +17,7 @@ Arguments parse_args(int argc, char** argv) {
   for (int i = 1; i < argc; ++i) {
     char* arg = argv[i];
     if (strcmp(arg, "--help") == 0) {
-      printf("Usage: rust [--version]\n");
+      printf("Usage: bridge [--version]\n");
     } else if (strcmp(arg, "--version") == 0) {
       args.version_check = true;
     } else {

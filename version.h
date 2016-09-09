@@ -28,4 +28,4 @@ inline bool operator<(const Version& lhs, const Version& rhs) {
   return false;
 }
 
-const Version k_version = { 0, 0, 0, 0 };
+const Version k_version = { 1, 0, 0, 0 };
