@@ -14,7 +14,7 @@ ApplicationWindow {
     }
 
     Audio {
-        source: "qrc:/assets/caravanLooping.ogg"
+        source: "qrc:/assets/caravanLooping.mp3"
         loops: Audio.Infinite
         autoPlay: true
     }

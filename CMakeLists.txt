@@ -34,8 +34,6 @@ add_definitions(-DEIGEN_MPL2_ONLY)
 add_executable(bridge ${SOURCES} ${MOC_SOURCES} ${QRC_SOURCES})
 qt5_use_modules(bridge Core Gui Qml Quick Multimedia)
 
-configure_file(assets/caravanLooping.wav assets/caravanLooping.wav COPYONLY)
-
 install(TARGETS bridge
   RUNTIME DESTINATION .
 )

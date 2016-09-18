@@ -14,6 +14,6 @@
         <file>assets/colored_desert.png</file>
         <file>assets/mountainBG.png</file>
         <file>assets/fadedLandscape.png</file>
-        <file>assets/caravanLooping.ogg</file>
+        <file>assets/caravanLooping.mp3</file>
     </qresource>
 </RCC>
